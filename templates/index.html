@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Food Waste Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="shell">
+  <aside class="side">
+  <div class="brand">
+  <div class="logo">↗</div>
+  <div>
+  <strong>Food Waste Hub</strong>
+  <small>SMALL CHOICES, BIG GOOD</small>
+  </div>
+  </div>
+  <div class="nav-label">YOUR KITCHEN</div>
+  <nav class="nav">
+    <a class="{{ 'active' if page == 'waste' }}" href="/?page=waste">
+  <span>◌</span>Waste impact</a>
+  <a class="{{ 'active' if page == 'donate' }}" href="/?page=donate">
+  <span>♡</span>Share good food</a>
+  <a class="{{ 'active' if page == 'portion' }}" href="/?page=portion">
+  <span>◉</span>Portion guide</a>
+  <a class="{{ 'active' if page == 'check' }}" href="/?page=check">
+  <span>✳</span>Food check</a>
+  <a class="{{ 'active' if page == 'community' }}" href="/?page=community">
+  <span>☷</span>Community</a>
+  </nav>
+  <div class="side-note">
+  <b>Good food has a next chapter.</b>Small steps in your kitchen can make a real difference.</div>
+  <div class="guest">
+  <div class="guest-mark">☻</div>
+  <div>
+  <b>Browsing as a guest</b>
+  <small>No account needed</small>
+  </div>
+  </div>
+  </aside>
+  <main class="main">
+  <header class="top">
+  <div class="hello">
+  <small>A LITTLE GOOD GOES A LONG WAY</small>
+  <b>Welcome to Food Waste Hub</b>
+  </div>
+  <div class="top-actions">{% if user %}<span class="today">Hi, {{ user.display_name }}</span><form method="post" action="{{ url_for('logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="text-button">Log out</button></form>{% else %}<a class="today" href="{{ url_for('login') }}">Log in</a>{% endif %}<span class="today">🌱 &nbsp; Your impact starts here</span></div>
+  </header>
+  {% if message %}
+  <div class="notice" role="status">{{ message }}</div>
+  {% endif %}
+  {% if page == 'waste' %}
+  <section>
+  <div class="pagehead">
+  <div class="eyebrow">WASTE IMPACT</div>
+  <h1>Every bite has a story.</h1>
+  <p>Tell us what was left behind. We’ll gently show the resources it took to grow it.</p>
+  </div>
+  <div class="grid">
+  <div class="card">
+  <div class="eyebrow">A QUICK CHECK-IN</div>
+  <h2>What food went uneaten?</h2>
+  <p>A rough estimate is perfectly okay.</p>
+  <div class="chips">
+  <a class="chip" href="#rice" onclick="document.getElementById('food').value='Cooked rice'">🍚 Rice</a>
+  <a class="chip" href="#roti" onclick="document.getElementById('food').value='Roti'">🫓 Roti</a>
+  <a class="chip" href="#dal" onclick="document.getElementById('food').value='Dal'">🥣 Dal</a>
+  <a class="chip" href="#veg" onclick="document.getElementById('food').value='Vegetables'">🥬 Veg</a>
+  <a class="chip" href="#other" onclick="document.getElementById('food').value='Other'">＋ Other</a>
+  </div>
+  <form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="action" value="impact">
+  <div class="fields">
+  <div class="field">
+  <label for="food">FOOD</label>
+  <select id="food" name="food">
+  {% for item in ['Cooked rice','Roti','Dal','Vegetables','Other'] %}
+  <option>{{ item }}</option>
+  {% endfor %}
+  </select>
+  </div>
+  <div class="field">
+  <label for="amount">AMOUNT LEFT</label>
+  <input id="amount" name="amount" type="number" min="1" step="any" placeholder="e.g. 250" required>
+  </div>
+  </div>
+  <div class="field" style="margin-top:11px">
+  <label for="unit">HOW MUCH IS THAT?</label>
+  <select id="unit" name="unit">
+  <option value="g">Grams (g)</option>
+  <option value="kg">Kilograms (kg)</option>
+  <option value="serving">About 1 serving</option>
+  </select>
+  </div>
+  <button class="primary wide">Show me the impact →</button>
+  </form>
+  </div>
+    <div class="card impact">
+  <div class="eyebrow">A GENTLE REMINDER</div>
+  {% if impact %}
+  <h2>
+  {% if impact.grams < 50 %}Even a few bites have a story.{% else %}That food took care to grow.{% endif %}
+  </h2>
+  <p class="impact-copy">About {{ impact.grams }} g of {{ impact.food|lower }} was left. These broad estimates help show the resources behind it—not a measure of anyone’s worth.</p>
+  <div class="metrics">
+  <div class="metric">
+  <strong>{{ impact.meals }}</strong>
+  <small>meal-sized portions*</small>
+  </div>
+  <div class="metric">
+  <strong>
+  {% if impact.water is not none %}{{ impact.water }}{% else %}—{% endif %}
+  </strong>
+  <small>litres of growing water*</small>
+  </div>
+  </div>
+  {% else %}
+  <h2>A small portion still matters.</h2>
+  <p class="impact-copy">Your estimate will appear here. No guilt—just a clearer picture of the care and resources behind food.</p>
+  <div class="metrics">
+  <div class="metric">
+  <strong>—</strong>
+  <small>meal-sized portions*</small>
+  </div>
+  <div class="metric">
+  <strong>—</strong>
+  <small>litres of growing water*</small>
+  </div>
+  </div>
+  {% endif %}
+  <a class="primary" style="display:inline-block;text-decoration:none" href="/?page=donate">Have extra food to share? →</a>
+  <p style="margin-top:15px">
+  <small>*Rice uses a global dry-rice estimate converted approximately to cooked weight. Other foods need ingredient-specific data. <a href="https://www.waterfootprint.org/resources/multimediahub/Water_Footprint_Assessment_for_global_sustainability.pdf" target="_blank" rel="noopener">Source and method</a>.</small>
+  </p>
+  <p style="margin-top:10px">Growing food also takes people’s care—from planting and tending to harvest. We do not assign hours without comparable data.</p>
+  </div>
+  </div>
+  <div class="bottom-grid">
+  <div class="card">
+  <div class="eyebrow">BEHIND THE MEAL</div>
+  <h2>Food carries care with it.</h2>
+  <p>From growing and harvesting to bringing it home, food takes time and natural resources. These numbers are broad estimates, not exact measurements.</p>
+  </div>
+  <div class="card tip">
+  <div class="eyebrow">A KIND NEXT STEP</div>
+  <h2>Leftovers can be a fresh start.</h2>
+  <p>Store what’s safe, plan a smaller serving tomorrow, or offer untouched surplus for pickup.</p>
+  <p style="margin-top:12px">
+  <a href="/?page=portion">Plan a portion →</a>
+  </p>
+  </div>
+  </div>
+  </section>
+  {% elif page == 'donate' %}
+  <section>
+  <div class="pagehead">
+  <div class="eyebrow">SHARE GOOD FOOD</div>
+  <h1>Let good food travel further.</h1>
+  <p>Have safe, untouched surplus? Tell us a little about it and explore the pickup process.</p>
+  </div>
+  <div class="banner">
+  <div>
+  <b>Give extra portions a next chapter.</b>
+  <p>In a full service, a verified local partner would confirm food safety and arrange pickup.</p>
+  </div>
+  <span class="badge">Preview · no pickup is booked</span>
+  </div>
+  <div class="grid">
+  <div class="card">
+  <div class="eyebrow">FOOD DETAILS</div>
+  {% if user %}
+  <h2>What would you like to offer?</h2>
+  <form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="action" value="donation">
+  <div class="fields">
+  <div class="field">
+  <label for="donation-type">FOOD TYPE</label>
+  <select id="donation-type" name="food_type">
+  <option>Cooked meal</option>
+  <option>Fresh produce</option>
+  <option>Packaged food</option>
+  </select>
+  </div>
+  <div class="field">
+  <label for="portions">PORTIONS</label>
+  <input id="portions" name="portions" type="number" min="1" max="10000" placeholder="e.g. 4" required>
+  </div>
+  <div class="field">
+  <label for="prepared">PREPARED AT</label>
+  <input id="prepared" name="prepared_at" type="time" required>
+  </div>
+  <div class="field">
+  <label for="storage">STORED HOW?</label>
+  <select id="storage" name="storage">
+  <option>Refrigerated</option>
+  <option>Kept hot</option>
+  <option>Room temperature</option>
+  </select>
+  </div>
+  </div>
+  <div class="field" style="margin-top:12px">
+  <label for="allergens">ALLERGENS OR NOTES</label>
+  <input id="allergens" name="allergens" placeholder="Add anything a recipient should know">
+  </div>
+  <button class="primary" style="margin-top:14px">Review offer →</button>
+  </form>
+  {% else %}<p>Log in or create an account to submit an offer.</p><p><a class="primary" href="{{ url_for('login', next='/?page=donate') }}">Log in to share food →</a></p>{% endif %}
+  </div>
+  <div class="card">
+  <div class="eyebrow">HOW IT WOULD WORK</div>
+  <div class="list">
+  <div class="row">
+  <span>① &nbsp;Share food details</span>
+  <small>About 1 min</small>
+  </div>
+  <div class="row">
+  <span>② &nbsp;Safety check by a partner</span>
+  <small>Before pickup</small>
+  </div>
+  <div class="row">
+  <span>③ &nbsp;Pickup and handover</span>
+  <small>Partner confirmed</small>
+  </div>
+  </div>
+  <p style="margin-top:14px">A pickup should only be confirmed after a verified local partner accepts the food.</p>
+  {% if user and donations %}<h2 style="margin-top:20px">Your recent offers</h2><div class="list">{% for offer in donations %}<div class="row"><span>{{ offer.food_type }} · {{ offer.portions }} portions</span><small>{{ offer.status }}</small></div>{% endfor %}</div>{% endif %}
+  </div>
+  </div>
+  </section>
+  {% elif page == 'portion' %}
+  <section>
+  <div class="pagehead">
+  <div class="eyebrow">PORTION GUIDE</div>
+  <h1>Make just enough. Feel good about it.</h1>
+  <p>Get a gentle starting point for meal portions. Your needs can vary from day to day.</p>
+  </div>
+  <div class="grid">
+  <div class="card">
+  <div class="eyebrow">A SIMPLE STARTING POINT</div>
+  <h2>Tell us a little about yourself</h2>
+  <form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="action" value="calories">
+  <div class="fields">
+  <div class="field">
+  <label for="age">AGE</label>
+  <input id="age" type="number" name="age" min="19" max="78" placeholder="19–78 years" required>
+  </div>
+  <div class="field">
+  <label for="weight">WEIGHT</label>
+  <input id="weight" type="number" name="weight" min="10" max="500" step="any" placeholder="kg" required>
+  </div>
+  <div class="field">
+  <label for="height">HEIGHT</label>
+  <input id="height" type="number" name="height" min="100" max="250" step="any" placeholder="cm" required>
+  </div>
+  <div class="field">
+  <label for="equation_group">EQUATION OPTION</label>
+  <select id="equation_group" name="equation_group" required>
+  <option value="" disabled selected>Select one</option>
+  <option value="female">Female coefficient</option>
+  <option value="male">Male coefficient</option>
+  </select>
+  </div>
+  <div class="field" style="grid-column:1/-1">
+  <label for="activity">ACTIVITY MOST DAYS</label>
+  <select id="activity" name="activity">
+  <option value="low">Mostly sitting (×1.2)</option>
+  <option value="light" selected>Light activity (×1.375)</option>
+  <option value="active">Active most days (×1.55)</option>
+  </select>
+  </div>
+  </div>
+  <p style="margin-top:12px">Mifflin–St Jeor estimates resting energy for adults in the study age range (19–78). The daily figure applies a rough planning multiplier: 1.2 for mostly sitting, 1.375 for light activity, or 1.55 for active most days. These multipliers are shorthand estimates, not measured needs. Select the equation coefficient that best fits you; it is not a gender identity question.</p>
+  <button class="primary wide">Show a starting point →</button>
+  </form>
+  {% if calories %}
+  <div class="result">
+  <b>Resting energy estimate: about {{ calories.resting }} calories/day</b>
+  <br>Rough activity-adjusted daily estimate: about {{ calories.daily }} calories/day (×{{ calories.factor }}). This is not a target or medical advice; real needs vary, and this shortcut may not fit pregnancy, illness, or individual circumstances. <a href="https://pubmed.ncbi.nlm.nih.gov/2305711/" target="_blank" rel="noopener">About the resting-energy equation</a>.</div>
+  {% endif %}
+  </div>
+  <div class="card">
+  <div class="eyebrow">A VISUAL GUIDE</div>
+  <h2>Use your hand as a guide</h2>
+  <div class="list">
+  <div class="row">
+  <span>🖐 &nbsp;Palm-sized</span>
+  <small>Protein</small>
+  </div>
+  <div class="row">
+  <span>✊ &nbsp;Fist-sized</span>
+  <small>Vegetables</small>
+  </div>
+  <div class="row">
+  <span>🤲 &nbsp;Cupped hand</span>
+  <small>Rice, grains, or pasta</small>
+  </div>
+  </div>
+  <p style="margin-top:14px">A guide, not a rule. Your body’s hunger cues matter most.</p>
+  </div>
+  </div>
+  </section>
+  {% elif page == 'check' %}
+  <section>
+  <div class="pagehead">
+  <div class="eyebrow">FOOD CHECK</div>
+  <h1>Curious about a food?</h1>
+  <p>Get a plain-language look at what it can offer and what to keep in mind.</p>
+  </div>
+  <div class="grid">
+  <div class="card">
+  <form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="action" value="food_check">
+  <div class="field">
+  <label for="food-name">FOOD OR MEAL</label>
+  <input id="food-name" name="food_name" placeholder="Try: lentils, banana, instant noodles" required>
+  </div>
+  <button class="primary" style="margin-top:14px">Take a look →</button>
+  </form>
+  {% if food_result %}
+  <div class="result">
+  <b>{{ food_result.name }}</b>
+  <p style="margin-top:8px">
+  <b>What it can offer:</b> {{ food_result.good }}</p>
+  <p style="margin-top:8px">
+  <b>Worth keeping in mind:</b> {{ food_result.consider }}</p>
+  </div>
+  {% endif %}
+  </div>
+  <div class="card">
+  <div class="eyebrow">A BALANCED VIEW</div>
+  <h2>No food is a moral test.</h2>
+  <p>We’ll describe common nutrients and practical context, without labeling your choices as “good” or “bad.” Ingredients and portion sizes make a difference.</p>
+  <div class="chips">
+  <span class="chip">🍚 Rice</span>
+  <span class="chip">🥣 Lentils</span>
+  <span class="chip">🍌 Banana</span>
+  <span class="chip">🍜 Instant noodles</span>
+  </div>
+  </div>
+  </div>
+  </section>
+  {% else %}
+  <section>
+  <div class="pagehead">
+  <div class="eyebrow">COMMUNITY</div>
+  <h1>Your food story belongs here.</h1>
+  <p>Share feedback, experiences, or ideas with people working toward less food waste.</p>
+  </div>
+  <div class="grid">
+  <div class="card">
+  <div class="eyebrow">SHARE YOUR STORY</div>
+  {% if user %}
+  <h2>What would you like people to know?</h2>
+  <form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="action" value="community">
+  <div class="field" style="margin-top:16px">
+  <label for="community-name">YOUR NAME (OPTIONAL)</label>
+  <input id="community-name" name="display_name" maxlength="80" placeholder="Leave blank to use your account name">
+  </div>
+  <div class="field" style="margin-top:12px">
+  <label for="community-story">YOUR STORY</label>
+  <textarea id="community-story" name="story" placeholder="Write your feedback, experience, or story..." required></textarea>
+  </div>
+  <button class="primary" style="margin-top:14px">Share story →</button>
+  <p style="margin-top:10px">Your post will be visible in this community page. Don’t include private information.</p>
+  </form>
+  {% else %}<p>Log in or create an account to share your story.</p><p><a class="primary" href="{{ url_for('login', next='/?page=community') }}">Log in to share →</a></p>{% endif %}
+  </div>
+  <div class="card">
+  <div class="eyebrow">COMMUNITY SPACE</div>
+  <h2>A place for shared learning</h2>
+  <p>This space is ready for community stories and feedback.</p>
+  <div class="posts">{% for post in posts %}<article class="community-post"><span class="badge">Community story</span><p>{{ post.story }}</p><small>Shared by {{ post.display_name }} · {{ post.created_at[:10] }}</small></article>{% else %}<div class="empty">No stories have been shared yet.</div>{% endfor %}</div>
+  </div>
+  </div>
+  </section>
+  {% endif %}
+  </main>
+  </div>
+  <nav class="mobile-nav">
+  <a class="{{ 'active' if page == 'waste' }}" href="/?page=waste">
+  <span>◌</span>Impact</a>
+  <a class="{{ 'active' if page == 'donate' }}" href="/?page=donate">
+  <span>♡</span>Share</a>
+  <a class="{{ 'active' if page == 'portion' }}" href="/?page=portion">
+  <span>◉</span>Portions</a>
+  <a class="{{ 'active' if page == 'check' }}" href="/?page=check">
+  <span>✳</span>Food check</a>
+  <a class="{{ 'active' if page == 'community' }}" href="/?page=community">
+  <span>☷</span>Community</a>
+  </nav>
+</body>
+  </html>

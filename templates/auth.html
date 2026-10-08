@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ 'Create account' if mode == 'register' else 'Log in' }} · Food Waste Hub</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-page">
+  <main class="auth-card">
+    <a class="auth-brand" href="/?page=waste"><span class="logo">↗</span><span><b>Food Waste Hub</b><small>SMALL CHOICES, BIG GOOD</small></span></a>
+    <div class="eyebrow">YOUR ACCOUNT</div>
+    <h1>{{ 'Create your account' if mode == 'register' else 'Welcome back' }}</h1>
+    <p class="auth-intro">{{ 'Join the community and manage your food sharing offers.' if mode == 'register' else 'Log in to share a story or offer surplus food.' }}</p>
+    {% if error %}<div class="notice" role="alert">{{ error }}</div>{% endif %}
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="next" value="{{ next_path }}">
+      {% if mode == 'register' %}
+      <div class="field"><label for="display-name">DISPLAY NAME</label><input id="display-name" name="display_name" maxlength="80" autocomplete="name" required></div>
+      {% endif %}
+      <div class="field"><label for="email">EMAIL</label><input id="email" name="email" type="email" maxlength="254" autocomplete="email" required></div>
+      <div class="field" style="margin-top:12px"><label for="password">PASSWORD</label><input id="password" name="password" type="password" minlength="10" autocomplete="{{ 'new-password' if mode == 'register' else 'current-password' }}" required></div>
+      {% if mode == 'register' %}<p class="fineprint">Use at least 10 characters. Passwords are stored as one-way hashes.</p>{% endif %}
+      <button class="primary wide">{{ 'Create account' if mode == 'register' else 'Log in' }} →</button>
+    </form>
+    <p class="auth-switch">{% if mode == 'register' %}Already registered? <a href="{{ url_for('login', next=next_path) }}">Log in</a>{% else %}New here? <a href="{{ url_for('register', next=next_path) }}">Create an account</a>{% endif %}</p>
+    <a class="back-link" href="/?page=waste">← Back to Food Waste Hub</a>
+  </main>
+</body>
+</html>
